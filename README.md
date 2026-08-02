@@ -1,0 +1,2 @@
+# smartStock
+Inventory Management
