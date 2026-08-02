@@ -19,10 +19,10 @@ app.get('/', (req, res) => {
 // Sample Test Route to fetch products from XAMPP MySQL
 app.get('/api/products', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM products');
-    res.json({ success: true, data: rows });
+    const [rows] = await db.query('SELECT * FROM products ORDER BY id DESC');
+    res.json({ success: true, products: rows });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, products: [], error: error.message });
   }
 });
 // 1. Lookup Product by Barcode
@@ -69,6 +69,25 @@ app.post('/api/products/stock-adjust', async (req, res) => {
     res.json({ success: true, message: `Stock updated (${type})` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+// 5. Add Product with Auto-Generated Barcode
+app.post('/api/products/auto-generate', async (req, res) => {
+  try {
+    const { name, price, stock_quantity, low_stock_threshold } = req.body;
+
+    // Generate a 12-digit purely numeric string (e.g. "890482910482")
+    const numericBarcode = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+
+    const [result] = await db.query(
+      'INSERT INTO products (barcode, name, price, stock_quantity, low_stock_threshold) VALUES (?, ?, ?, ?, ?)',
+      [numericBarcode, name, price, stock_quantity, low_stock_threshold]
+    );
+
+    res.json({ success: true, barcode: numericBarcode, id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: 'Failed to generate barcode' });
   }
 });
 // Start Server
