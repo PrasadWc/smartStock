@@ -16,11 +16,32 @@ app.use(express.json());
 // BASIC HEALTH CHECK
 // =====================================================
 
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'ScanStock API is running smoothly!'
-    });
+app.get('/', async (req, res) => {
+    try {
+        // Test database connection
+        const connection = await db.getConnection();
+        connection.release();
+        
+        res.json({
+            success: true,
+            message: 'ScanStock API is running smoothly!',
+            database: {
+                status: 'connected',
+                message: 'Database connection successful'
+            }
+        });
+    } catch (error) {
+        console.error('Health check error:', error);
+        
+        res.status(503).json({
+            success: false,
+            message: 'ScanStock API is running but database connection failed',
+            database: {
+                status: 'disconnected',
+                message: error.message
+            }
+        });
+    }
 });
 
 
