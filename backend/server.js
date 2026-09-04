@@ -79,6 +79,60 @@ app.get('/api/categories', async (req, res) => {
 
 
 // =====================================================
+// CREATE NEW CATEGORY
+// =====================================================
+
+app.post('/api/categories', async (req, res) => {
+
+    try {
+
+        const { category_name } = req.body;
+
+        // Required fields
+        if (!category_name) {
+
+            return res.status(400).json({
+                success: false,
+                message: 'Category name is required.'
+            });
+        }
+
+        const [result] = await db.query(`
+            INSERT INTO categories
+            (
+                category_name
+            )
+            VALUES (?)
+        `, [category_name]);
+
+        res.json({
+            success: true,
+            id: result.insertId,
+            message: 'Category added successfully!'
+        });
+
+    } catch (error) {
+
+        console.error('Add category error:', error);
+
+        // Duplicate category name
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(400).json({
+                success: false,
+                message: 'Category name already exists.'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+
+// =====================================================
 // GET ALL PRODUCTS
 // =====================================================
 
