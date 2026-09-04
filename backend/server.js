@@ -755,9 +755,14 @@ app.delete('/api/products/:id', async (req, res) => {
 // START SERVER
 // =====================================================
 
-app.listen(PORT, () => {
+(async () => {
+    try {
+        const initializeDatabase = require('./initializeDatabase');
+        await initializeDatabase();
 
-    console.log(`
+        app.listen(PORT, () => {
+
+            console.log(`
 ========================================
 🚀 ScanStock Backend
 ========================================
@@ -766,4 +771,9 @@ Database: XAMPP MySQL
 ========================================
 `);
 
-});
+        });
+    } catch (err) {
+        console.error('Failed to initialize database, exiting:', err);
+        process.exit(1);
+    }
+})();
